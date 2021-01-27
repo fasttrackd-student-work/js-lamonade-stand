@@ -2,7 +2,7 @@
   "name": "lemonade-stand",
   "version": "1.0.0",
   "description": "Cooksys lemonade stand application",
-  "main": "build/callbacks.js",
+  "main": "build/index.js",
   "scripts": {
     "build": "babel ./src -d ./build",
     "prestart": "npm run build",
