@@ -2,11 +2,11 @@
   "name": "lemonade-stand",
   "version": "1.0.0",
   "description": "Cooksys lemonade stand application",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
     "build": "babel ./src -d ./build",
     "prestart": "npm run build",
-    "start": "node ./build/index.js"
+    "start": "node ."
   },
   "author": "Will Marttala",
   "license": "ISC",
