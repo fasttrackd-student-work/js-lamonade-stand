@@ -16,17 +16,6 @@ vorpal
     'Create an order and saves it as a JSON file'
   )
   .action(function (args, callback) {
-    const order = {
-      total: 0,
-      lemonades: [],
-      customer: {
-        name: args.name,
-        phoneNumber: args.phoneNumber
-      },
-      lemonadeStand: {
-        name: 'Cooksys Lemonade Stand'
-      }
-    }
     // Prompt the user for how many lemonades they want
     this.prompt(
       {
@@ -36,16 +25,31 @@ vorpal
         message: 'How many lemonades would you like to order?'
       },
       ({ numLemonades }) => {
-        let questions = []
-        for (let i = 1; i <= Number.parseInt(numLemonades); i++) {
-          questions = buildQuestionArray(questions, i)
-        }
+        // [undefined, undefined, undefined, undefined] -> [16{}]
+        const questions = [...Array(Number.parseInt(numLemonades))].flatMap(
+          buildQuestionArray
+        )
+
+        // for (let i = 1; i <= Number.parseInt(numLemonades); i++) {
+        //   questions = buildQuestionArray(questions, i)
+        // }
         this.prompt(questions, response => {
-          for (let i = 1; i <= numLemonades; i++) {
-            order = updateOrderTotal(
-              addLemonadeToOrder(createLemonade(response, i))
-            )
-          }
+          const order = updateOrderTotal(
+            [...Array(Number.parseInt(numLemonades))]
+              .map(createLemonade(response))
+              .reduce(addLemonadeToOrder, {
+                total: 0,
+                lemonades: [],
+                customer: {
+                  name: args.name,
+                  phoneNumber: args.phoneNumber
+                },
+                lemonadeStand: {
+                  name: 'Cooksys Lemonade Stand'
+                }
+              })
+          )
+
           writeFileSync(
             order.lemonadeStand.name + '/' + order.customer.name + '.json',
             order
