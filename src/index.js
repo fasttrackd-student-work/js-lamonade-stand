@@ -29,10 +29,6 @@ vorpal
         const questions = [...Array(Number.parseInt(numLemonades))].flatMap(
           buildQuestionArray
         )
-
-        // for (let i = 1; i <= Number.parseInt(numLemonades); i++) {
-        //   questions = buildQuestionArray(questions, i)
-        // }
         this.prompt(questions, response => {
           const order = updateOrderTotal(
             [...Array(Number.parseInt(numLemonades))]
