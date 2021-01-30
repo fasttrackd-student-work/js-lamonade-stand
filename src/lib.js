@@ -1,5 +1,19 @@
 import fs from 'fs'
 
+const curry = (f, arr = []) => (...args) =>
+  (a => (a.length >= f.length ? f(...a) : curry(f, a)))([...arr, ...args])
+
+// curry((a, b) => a + b)
+// ((f, arr = []) => (...args) => (a => (a.length === f.length ? f(...a) : curry(f, a)))([...arr, ...args]))[(a, b) => a + b/f]
+//  (...args) => (a => (a.length === ((a, b) => a + b)).length ? ((a, b) => a + b)(...a) : curry((a, b) => a + b, a)))([...[], ...args])
+// (...args) => (a => a.length === 2 ? ((a, b) => a + b)(...a) : curry((a, b) => a + b, a)))[[...[], ...args]/a]
+// (...args) => args.length === 2 ? ((a, b) => a + b)(...args) : curry((a, b) => a + b, args)
+
+// Transducer
+// transformer => reducer => reducer
+export const map = f => reducer => (acc, curr, idx, arr) =>
+  reducer(acc, f(curr, idx), idx, arr)
+
 const calculateLemonadePrice = lemonade => {
   let result = 0.75
   for (let key in lemonade) {
@@ -66,20 +80,18 @@ export const buildQuestionArray = (val, i) => [
   }
 ]
 
-export const createLemonade = response => {
-  return (curr, i) => ({
-    lemonJuice: Number.parseInt(response['lemonJuice' + i]),
-    water: Number.parseInt(response['water' + i]),
-    sugar: Number.parseInt(response['sugar' + i]),
-    iceCubes: Number.parseInt(response['iceCubes' + i])
-  })
-}
+export const createLemonade = curry((response, curr, i) => ({
+  lemonJuice: Number.parseInt(response['lemonJuice' + i]),
+  water: Number.parseInt(response['water' + i]),
+  sugar: Number.parseInt(response['sugar' + i]),
+  iceCubes: Number.parseInt(response['iceCubes' + i])
+}))
 
-export const addLemonadeToOrder = (originalOrder, lemonade) => ({
-  ...originalOrder,
+export const addLemonadeToOrder = (acc, curr) => ({
+  ...acc,
   lemonades: [
-    ...originalOrder.lemonades,
-    { ...lemonade, price: calculateLemonadePrice(lemonade) }
+    ...acc.lemonades,
+    { ...curr, price: calculateLemonadePrice(curr) }
   ]
 })
 
