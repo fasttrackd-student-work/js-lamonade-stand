@@ -9,11 +9,6 @@ const increment = curriedAdd(1)
 
 console.log(curriedAdd(1, 2, 3, 4, 5, 6))
 
-const arr = [{ a: 1 }]
-
-console.log((arr[0]['b'] = 2) && arr)
-console.log(arr)
-
 // const add5 = curriedAdd(5)
 
 // console.log(add(1, 2))

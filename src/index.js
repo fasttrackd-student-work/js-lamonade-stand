@@ -1,12 +1,12 @@
 import Vorpal from 'vorpal'
 import {
-  writeFileSync,
-  readAllFiles,
-  buildQuestionArray,
-  createLemonade,
-  addLemonadeToOrder,
-  updateOrderTotal,
-  map
+  createQuestionsArray,
+  promptIngrediantQuestions,
+  createLemonadesArray,
+  addPriceToLemonades,
+  createOrderObject,
+  writeOrderToFile,
+  readAllFiles
 } from './lib'
 
 const vorpal = Vorpal()
@@ -16,46 +16,20 @@ vorpal
     'createOrder <name> <phoneNumber>',
     'Create an order and saves it as a JSON file'
   )
-  .action(function (args, callback) {
+  .action(function ({ name, phoneNumber }) {
     // Prompt the user for how many lemonades they want
-    this.prompt(
-      {
-        type: 'number',
-        name: 'numLemonades',
-        default: 1,
-        message: 'How many lemonades would you like to order?'
-      },
-      ({ numLemonades }) => {
-        // [undefined, undefined, undefined, undefined] -> [16{}]
-        const questions = [...Array(Number.parseInt(numLemonades))].flatMap(
-          buildQuestionArray
-        )
-        this.prompt(questions, response => {
-          const order = updateOrderTotal(
-            [...Array(Number.parseInt(numLemonades))].reduce(
-              map(createLemonade(response))(addLemonadeToOrder),
-              {
-                total: 0,
-                lemonades: [],
-                customer: {
-                  name: args.name,
-                  phoneNumber: args.phoneNumber
-                },
-                lemonadeStand: {
-                  name: 'Cooksys Lemonade Stand'
-                }
-              }
-            )
-          )
-
-          writeFileSync(
-            order.lemonadeStand.name + '/' + order.customer.name + '.json',
-            order
-          )
-          callback()
-        })
-      }
-    )
+    return this.prompt({
+      type: 'number',
+      name: 'numLemonades',
+      default: 1,
+      message: 'How many lemonades would you like to order?'
+    })
+      .then(createQuestionsArray)
+      .then(promptIngrediantQuestions(this))
+      .then(createLemonadesArray)
+      .then(addPriceToLemonades)
+      .then(createOrderObject(name, phoneNumber))
+      .then(writeOrderToFile)
   })
 
 vorpal

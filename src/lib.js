@@ -14,7 +14,7 @@ const curry = (f, arr = []) => (...args) =>
 export const map = f => reducer => (acc, curr, idx, arr) =>
   reducer(acc, f(curr, idx), idx, arr)
 
-const calculateLemonadePrice = lemonade => {
+export const calculateLemonadePrice = lemonade => {
   let result = 0.75
   for (let key in lemonade) {
     switch (key) {
@@ -99,3 +99,72 @@ export const updateOrderTotal = order => ({
   ...order,
   total: calculateOrderTotal(order.lemonades)
 })
+
+/*
+  {
+    lemonJuice0: '4',
+    water0: '4',
+    sugar0: '4',
+    iceCubes0: '10',
+    lemonJuice1: '6',
+    water1: '3',
+    sugar1: '5',
+    iceCubes1: '12'
+  }
+ ->
+  [
+    { lemonJuice: 4, water: 4, sugar: 4, iceCubes: 10 },
+    { lemonJuice: 6, water: 3, sugar: 5, iceCubes: 12 }
+  ]
+*/
+
+// split: ([key: string, val: string]) -> [[string, string, string], string]
+const split = ([key, val]) => [key.split(/(\d+)/), val] // [['lemonJuice', '0', ''], val]
+
+// parseNums: ([[key: string, idx: string], val: string]) -> [string, number, number]
+const parseNums = ([[key, idx], val]) => [
+  key,
+  Number.parseInt(idx),
+  Number.parseInt(val)
+]
+
+const makeLemonades = (acc, [key, idx, val]) =>
+  acc[idx] ? (acc[idx][key] = val) && acc : [...acc, { [key]: val }]
+
+// (...reducers) -> reducer -> reduce
+const compose = (...fns) => x => fns.reduceRight((y, f) => f(y), x)
+export const createLemonadesArray = response =>
+  Object.entries(response).reduce(
+    compose(map(split), map(parseNums))(makeLemonades),
+    []
+  )
+
+export const createQuestionsArray = ({ numLemonades }) =>
+  [...Array(Number.parseInt(numLemonades))].flatMap(buildQuestionArray)
+
+export const promptIngrediantQuestions = command => questions =>
+  command.prompt(questions)
+
+export const addPriceToLemonades = lemonadesWithoutPrice =>
+  lemonadesWithoutPrice.map(lemonade => ({
+    ...lemonade,
+    price: calculateLemonadePrice(lemonade)
+  }))
+
+export const createOrderObject = (name, phoneNumber) => lemonades => ({
+  customer: {
+    name,
+    phoneNumber
+  },
+  lemonadeStand: {
+    name: 'Cooksys Lemonade Stand'
+  },
+  lemonades,
+  total: lemonades.reduce((acc, curr) => acc + curr.price, 0)
+})
+
+export const writeOrderToFile = order =>
+  writeFileSync(
+    order.lemonadeStand.name + '/' + order.customer.name + '.json',
+    order
+  )
